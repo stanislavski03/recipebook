@@ -84,3 +84,14 @@ def page_index(request: Request, db: Session = Depends(get_session)):
         request=request,
         context={"recipes": [r.to_dict() for r in recipes]},
     )   
+
+@app.get("/recipe/{recipe_id}", response_class=HTMLResponse)
+def page_recipe(recipe_id: int, request: Request, db: Session = Depends(get_session)):
+    recipe = db.get(RbkRecipe, recipe_id)
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+    return templates.TemplateResponse(
+        name="rbk_recipe.html",
+        request=request,
+        context={"recipe": recipe.to_dict()},
+    )
