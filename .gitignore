@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Env-файлы (секреты!)
+.env
+.env.*
+!.env.example
+
+# Данные контейнеров
+pgdata/
+rbk_pgdata/
+*.tar
+*.tar.gz
+
+# Временные
+temp/
+*.tmp
+*.log
+log/*.tmp
+
+# Секреты
+passwords.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
