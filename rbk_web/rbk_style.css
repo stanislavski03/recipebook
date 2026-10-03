@@ -1,0 +1,45 @@
+* { box-sizing: border-box; }
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+    background: #fafafa;
+    color: #222;
+}
+.rbk-header {
+    background: #2c3e50;
+    color: #fff;
+    padding: 20px 40px;
+}
+.rbk-header a { color: #fff; text-decoration: none; }
+.rbk-subtitle { opacity: 0.7; margin: 4px 0 0; }
+.rbk-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+.rbk-form input, .rbk-form textarea {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.rbk-form button {
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.rbk-list ul { list-style: none; padding: 0; }
+.rbk-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+.rbk-author { color: #888; font-size: 0.9em; }
+.rbk-empty { color: #999; font-style: italic; }

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RecipeBook — рецепт</title>
+    <link rel="stylesheet" href="/static/rbk_style.css">
+</head>
+<body>
+    <header class="rbk-header">
+        <h1><a href="/">← RecipeBook</a></h1>
+    </header>
+    <main class="rbk-container">
+        <h2>{{ recipe.title }}</h2>
+        <p class="rbk-author">Автор: {{ recipe.author }}</p>
+        <p>{{ recipe.description }}</p>
+    </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>RecipeBook — главная</title>
+    <link rel="stylesheet" href="/static/rbk_style.css">
+</head>
+<body>
+    <header class="rbk-header">
+        <h1>RecipeBook</h1>
+        <p class="rbk-subtitle">Кулинарная книга группы</p>
+    </header>
+
+    <main class="rbk-container">
+        <section class="rbk-form">
+            <h2>Добавить рецепт</h2>
+            <form id="rbk-form">
+                <input type="text" name="title" placeholder="Название" required>
+                <input type="text" name="author" placeholder="Автор" value="anonymous">
+                <textarea name="description" placeholder="Описание" rows="3"></textarea>
+                <button type="submit">Добавить</button>
+            </form>
+        </section>
+
+        <section class="rbk-list">
+            <h2>Все рецепты ({{ recipes|length }})</h2>
+            <ul id="rbk-recipes">
+                {% for r in recipes %}
+                <li>
+                    <a href="/recipe/{{ r.id }}">{{ r.title }}</a>
+                    <span class="rbk-author">— {{ r.author }}</span>
+                </li>
+                {% else %}
+                <li class="rbk-empty">Пока пусто. Добавь первый рецепт!</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </main>
+
+    <script src="/static/rbk_index.js"></script>
+</body>
+</html>
