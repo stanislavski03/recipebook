@@ -1,0 +1,82 @@
+# RecipeBook — основной стек.
+# Запуск: docker compose -f rbk_docker-compose.yml up -d
+
+services:
+  # --- База данных ---
+  rbk_db:
+    image: postgres:16-alpine
+    container_name: rbk_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${RBK_DB_USER}
+      POSTGRES_PASSWORD: ${RBK_DB_PASSWORD}
+      POSTGRES_DB: ${RBK_DB_NAME}
+    volumes:
+      - rbk_pgdata:/var/lib/postgresql/data
+    networks:
+      - rbk_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RBK_DB_USER} -d ${RBK_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- FastAPI ---
+  rbk_api:
+    build:
+      context: .
+      dockerfile: rbk_api/rbk_Dockerfile.api
+    container_name: rbk_api
+    restart: unless-stopped
+    environment:
+      RBK_DB_URL: postgresql+psycopg://${RBK_DB_USER}:${RBK_DB_PASSWORD}@rbk_db:5432/${RBK_DB_NAME}
+      RBK_API_HOST: 0.0.0.0
+      RBK_API_PORT: 8101
+    depends_on:
+      rbk_db:
+        condition: service_healthy
+    networks:
+      - rbk_net
+    # Ссылка (link) для демонстрации лабы 8 — устаревшая, но работает.
+    # В современном compose достаточно networks.
+    links:
+      - rbk_db
+
+  # --- Nginx ---
+  rbk_nginx:
+    build:
+      context: .
+      dockerfile: rbk_nginx/rbk_Dockerfile.nginx
+    container_name: rbk_nginx
+    restart: unless-stopped
+    ports:
+      - "${RBK_NGINX_PORT:-8100}:80"
+    depends_on:
+      - rbk_api
+    networks:
+      - rbk_net
+
+  # --- Adminer (веб-просмотр БД, удобно для отладки) ---
+  rbk_adminer:
+    image: adminer:latest
+    container_name: rbk_adminer
+    restart: unless-stopped
+    ports:
+      - "8104:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: rbk_db
+    depends_on:
+      - rbk_db
+    networks:
+      - rbk_net
+
+# --- Тома ---
+volumes:
+  rbk_pgdata:
+    name: rbk_pgdata
+
+# --- Сети ---
+networks:
+  rbk_net:
+    name: rbk_net
+    driver: bridge

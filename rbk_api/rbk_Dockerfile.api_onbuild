@@ -1,0 +1,2 @@
+FROM rbk_base:latest
+EXPOSE 8101

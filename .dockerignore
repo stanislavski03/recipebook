@@ -1,0 +1,37 @@
+# Git
+.git/
+.gitignore
+
+# Env-файлы (секреты!)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Данные БД
+pgdata/
+rbk_pgdata/
+*.sqlite3
+
+# Временные и логи
+temp/
+*.tmp
+*.log
+log/*.tmp
+
+# Секреты
+passwords.txt
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+rbk_Dockerfile*
+rbk_docker-compose*.yml
