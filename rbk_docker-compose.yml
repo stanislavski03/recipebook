@@ -1,8 +1,5 @@
-# RecipeBook — основной стек.
-# Запуск: docker compose -f rbk_docker-compose.yml up -d
-
 services:
-  # --- База данных ---
+  # --- Основная БД (Postgres) ---
   rbk_db:
     image: postgres:16-alpine
     container_name: rbk_db
@@ -37,8 +34,6 @@ services:
         condition: service_healthy
     networks:
       - rbk_net
-    # Ссылка (link) для демонстрации лабы 8 — устаревшая, но работает.
-    # В современном compose достаточно networks.
     links:
       - rbk_db
 
@@ -56,7 +51,7 @@ services:
     networks:
       - rbk_net
 
-  # --- Adminer (веб-просмотр БД, удобно для отладки) ---
+  # --- Adminer (просмотр Postgres) ---
   rbk_adminer:
     image: adminer:latest
     container_name: rbk_adminer
@@ -70,12 +65,55 @@ services:
     networks:
       - rbk_net
 
-# --- Тома ---
+  # --- WordPress DB (MySQL) ---
+  rbk_wp_db:
+    image: mysql:8
+    container_name: rbk_wp_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rbk_wp_root_pwd
+      MYSQL_DATABASE: rbk_wordpress
+      MYSQL_USER: rbk_wp_user
+      MYSQL_PASSWORD: rbk_wp_pwd
+    volumes:
+      - rbk_wp_db_data:/var/lib/mysql
+    networks:
+      - rbk_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prbk_wp_root_pwd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- WordPress ---
+  rbk_wp:
+    image: wordpress:6-php8.2-apache
+    container_name: rbk_wp
+    restart: unless-stopped
+    ports:
+      - "8102:80"
+    environment:
+      WORDPRESS_DB_HOST: rbk_wp_db:3306
+      WORDPRESS_DB_USER: rbk_wp_user
+      WORDPRESS_DB_PASSWORD: rbk_wp_pwd
+      WORDPRESS_DB_NAME: rbk_wordpress
+      WORDPRESS_TABLE_PREFIX: rbk_wp_
+    volumes:
+      - rbk_wp_data:/var/www/html
+    depends_on:
+      rbk_wp_db:
+        condition: service_healthy
+    networks:
+      - rbk_net
+
 volumes:
   rbk_pgdata:
     name: rbk_pgdata
+  rbk_wp_db_data:
+    name: rbk_wp_db_data
+  rbk_wp_data:
+    name: rbk_wp_data
 
-# --- Сети ---
 networks:
   rbk_net:
     name: rbk_net
