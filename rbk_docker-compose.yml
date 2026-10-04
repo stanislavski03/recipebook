@@ -30,6 +30,7 @@ services:
       RBK_API_HOST: 0.0.0.0
       RBK_API_PORT: 8101
       RBK_DROPBOX_TOKEN: ${RBK_DROPBOX_TOKEN}
+      RBK_YADISK_TOKEN: ${RBK_YADISK_TOKEN}
     depends_on:
       rbk_db:
         condition: service_healthy

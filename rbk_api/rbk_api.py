@@ -165,3 +165,69 @@ def dropbox_export_recipes(db: Session = Depends(get_session)):
         }
     finally:
         Path(tmp_path).unlink(missing_ok=True)
+
+# ============================================================================
+# Yandex.Disk integration
+# ============================================================================
+from rbk_yadisk import (
+    get_disk_info,
+    list_files as yadisk_list_files,
+    create_folder as yadisk_create_folder,
+    upload_file as yadisk_upload_file,
+    publish as yadisk_publish,
+    delete_file as yadisk_delete_file,
+)
+
+
+@app.get("/api/yadisk/info")
+def yadisk_info():
+    return get_disk_info()
+
+
+@app.get("/api/yadisk/list")
+def yadisk_list(path: str = "/"):
+    return yadisk_list_files(path)
+
+
+@app.post("/api/yadisk/backup")
+def yadisk_backup(db: Session = Depends(get_session)):
+    """Экспортирует рецепты в JSON и заливает на Яндекс-Диск."""
+    import json
+    import tempfile
+    from datetime import datetime
+    from pathlib import Path
+
+    recipes = db.query(RbkRecipe).all()
+    data = [r.to_dict() for r in recipes]
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(data, tmp, ensure_ascii=False, indent=2)
+        tmp_path = tmp.name
+
+    try:
+        # Создаём папку (409 уже обрабатывается внутри)
+        yadisk_create_folder("/rbk_backups")
+
+        filename = f"/rbk_backups/recipes_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        yadisk_upload_file(tmp_path, filename)
+        public_url = yadisk_publish(filename)
+
+        return {
+            "status": "ok",
+            "path": filename,
+            "public_url": public_url,
+            "count": len(data),
+        }
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+
+@app.get("/api/yadisk/find")
+def yadisk_find():
+    """Показать содержимое /rbk_backups (или вернуть пустой список)."""
+    try:
+        return yadisk_list_files("/rbk_backups")
+    except Exception:
+        return []
