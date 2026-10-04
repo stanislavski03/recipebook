@@ -62,7 +62,8 @@ def create_folder(path: str) -> dict:
     """Создать папку по пути."""
     dbx = _client()
     try:
-        meta = dbx.files_create_folder_v2(path).metadata
+        result = dbx.files_create_folder_v2(path)
+        meta = getattr(result, "metadata", result)
         return {"path": meta.path_display, "name": meta.name}
     except ApiError as e:
         raise RuntimeError(f"Не удалось создать папку: {e}")
@@ -72,11 +73,14 @@ def upload_file(local_path: str, remote_path: str) -> dict:
     """Загрузить файл в Dropbox. Если файл есть — перезаписать."""
     dbx = _client()
     with open(local_path, "rb") as f:
-        meta = dbx.files_upload(
+        result = dbx.files_upload(
             f.read(),
             remote_path,
             mode=WriteMode.overwrite,
-        ).metadata
+        )
+    # В новых версиях SDK возвращается сразу FileMetadata.
+    # В старых — обёртка с полем .metadata. Обрабатываем оба случая.
+    meta = getattr(result, "metadata", result)
     return {"path": meta.path_display, "size": meta.size}
 
 
