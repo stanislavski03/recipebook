@@ -95,3 +95,73 @@ def page_recipe(recipe_id: int, request: Request, db: Session = Depends(get_sess
         request=request,
         context={"recipe": recipe.to_dict()},
     )
+
+# ============================================================================
+# Dropbox integration
+# ============================================================================
+from rbk_dropbox import (
+    get_user_info,
+    get_space_usage,
+    list_folder,
+    upload_file,
+    create_shared_link,
+    search_files,
+    create_folder,
+)
+
+
+@app.get("/api/dropbox/info")
+def dropbox_info():
+    return get_user_info()
+
+
+@app.get("/api/dropbox/space")
+def dropbox_space():
+    return get_space_usage()
+
+
+@app.get("/api/dropbox/list")
+def dropbox_list(path: str = ""):
+    return list_folder(path)
+
+
+@app.get("/api/dropbox/search")
+def dropbox_search(q: str):
+    return search_files(q)
+
+
+@app.post("/api/dropbox/export-recipes")
+def dropbox_export_recipes(db: Session = Depends(get_session)):
+    """Экспортирует все рецепты в JSON и загружает в Dropbox."""
+    import json
+    import tempfile
+    from datetime import datetime
+    from pathlib import Path
+
+    recipes = db.query(RbkRecipe).all()
+    data = [r.to_dict() for r in recipes]
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".json", delete=False, encoding="utf-8"
+    ) as tmp:
+        json.dump(data, tmp, ensure_ascii=False, indent=2)
+        tmp_path = tmp.name
+
+    try:
+        # Создаём папку (если уже есть — просто игнорируем ошибку)
+        try:
+            create_folder("/rbk_exports")
+        except RuntimeError:
+            pass
+
+        filename = f"/rbk_exports/recipes_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        upload_file(tmp_path, filename)
+        link = create_shared_link(filename)
+        return {
+            "status": "ok",
+            "path": filename,
+            "link": link,
+            "count": len(data),
+        }
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)

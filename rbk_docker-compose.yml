@@ -29,6 +29,7 @@ services:
       RBK_DB_URL: postgresql+psycopg://${RBK_DB_USER}:${RBK_DB_PASSWORD}@rbk_db:5432/${RBK_DB_NAME}
       RBK_API_HOST: 0.0.0.0
       RBK_API_PORT: 8101
+      RBK_DROPBOX_TOKEN: ${RBK_DROPBOX_TOKEN}
     depends_on:
       rbk_db:
         condition: service_healthy
