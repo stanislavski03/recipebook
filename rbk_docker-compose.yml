@@ -108,6 +108,26 @@ services:
     networks:
       - rbk_net
 
+    # --- Cron-бэкап Postgres → Яндекс-Диск ---
+  rbk_backup:
+    build:
+      context: .
+      dockerfile: rbk_backup/rbk_Dockerfile.backup
+    container_name: rbk_backup
+    restart: unless-stopped
+    environment:
+      RBK_DB_HOST: rbk_db
+      RBK_DB_PORT: 5432
+      RBK_DB_NAME: ${RBK_DB_NAME}
+      RBK_DB_USER: ${RBK_DB_USER}
+      RBK_DB_PASSWORD: ${RBK_DB_PASSWORD}
+      RBK_YADISK_TOKEN: ${RBK_YADISK_TOKEN}
+    depends_on:
+      rbk_db:
+        condition: service_healthy
+    networks:
+      - rbk_net
+
 volumes:
   rbk_pgdata:
     name: rbk_pgdata

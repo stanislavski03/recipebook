@@ -1,0 +1,21 @@
+FROM alpine:3.20
+
+# postgresql-client — для pg_dump
+# curl — для работы с Яндекс-Диском
+# tzdata — для корректного времени
+RUN apk add --no-cache postgresql-client curl tzdata
+
+# Рабочая директория
+RUN mkdir -p /opt/rbk_backup
+WORKDIR /opt/rbk_backup
+
+# Копируем скрипт
+COPY rbk_backup/rbk_backup.sh /opt/rbk_backup/rbk_backup.sh
+RUN chmod +x /opt/rbk_backup/rbk_backup.sh
+
+# Cron: раз в час
+RUN echo "0 * * * * /opt/rbk_backup/rbk_backup.sh >> /var/log/rbk_backup.log 2>&1" \
+    > /etc/crontabs/root
+
+# Запускаем crond в foreground
+CMD ["crond", "-f", "-l", "2"]
