@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rbk-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./rbk_api/rbk_Dockerfile.api
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: RBK_API_HOST
+        value: 0.0.0.0
+      - key: RBK_DB_URL
+        fromDatabase:
+          name: rbk-db
+          property: connectionString
+
+databases:
+  - name: rbk-db
+    plan: free
+    databaseName: rbk_db
+    user: rbk_user
